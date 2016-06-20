@@ -13,6 +13,7 @@
 #include <QPushButton>
 #include <QTextEdit>
 #include <QGridLayout>
+#include <QSignalMapper>
 
 /**
  * Class defining a number button on a calculator. Inherits from QPushButton.
@@ -30,9 +31,28 @@ class numButton: public QPushButton {
    *  
    * @param value of button 
    */
-  numButton(int v) { val = v; text = v;}
+  numButton(int v);
+  
+  /**
+   * getter function. returns val.
+   *
+   * @return integer value of val
+   */
+  int getVal() { return val; }
 
 };
+
+/**
+ * class constructor, sets val to specified integer and sets text
+ *  
+ * @param value of button 
+ */
+numButton::numButton(int v) {
+
+	val = v; // set value
+	setText(QString::number(v)); // set button text
+	
+}
 
 /**
  * Class defining the calculator's screen. Contains slots to handle button presses.
@@ -63,7 +83,7 @@ class calcScreen: public QTextEdit {
    */
   void numPress(int v);
 
-}
+};
 
 /**
   * slot to handle presses of calculator number buttons
@@ -85,12 +105,12 @@ void calcScreen::numPress(int v) {
  *
  * @param layout layout of the calculator for the widget to be created in.
  */
-void createScreen(QGridLayout layout) {
+void createScreen(QGridLayout *layout) {
 	
   // initialising screen
-  calcScreen screen;
+  calcScreen *screen = new calcScreen;
   // now adding widget to layout, spans 3 columns
-  layout.addWidget(screen, 0, 0, 1, 3, Qt::AlignHCenter);
+  layout->addWidget(screen, 0, 0, 1, 3, Qt::AlignHCenter);
 	
 }
 
@@ -99,34 +119,35 @@ void createScreen(QGridLayout layout) {
  *
  * @param layout layout of the calculator for the widget to be created in.
  */
-void createNumberButtons(QGridLayout layout) {
+void createNumberButtons(QGridLayout *layout) {
 
   // create 1-9 number buttons using 2 for loops 
   for(int i = 1; i < 4; i++) {
     for(int j = 0; j < 3; j++) {
       
       // creating the button
-      numButton but(i+(j*3));
+      numButton *but = new numButton(i+(j*3));
       // add button into layout
-      layout-> addWidget(but, i+1, j, Qt::AlignHCenter);
+      layout->addWidget(but, i+1, j, Qt::AlignHCenter);
       
       // connection made to handle button presses using signal mapper
-      QSignalMapper *num = new QSignalMapper(this); // create mapper
-      connect(but, SIGNAL(pressed()), num, SLOT(map()));
-      num->setMapping(but, val); // pass val to slot as an int
-      connect(num, SIGNAL(mapped(int)), this, SLOT(calcScreen::numPress(int)));
+      QSignalMapper *num = new QSignalMapper(); // create mapper
+      QObject::connect(but, SIGNAL(pressed()), num, SLOT(map()));
+      num->setMapping(but, (i+(j*3))); // pass val to slot as an int
+      QObject::connect(num, SIGNAL(mapped(int)), calcScreen, SLOT(numPress(int)));
     }
   }
   
   // create the 0 button
-  numButton zero(0);
+  numButton *zero = new numButton(0);
   // add it to the layout, spans 2 columns
-  layout -> addWidget(zero, 5, 0, 1, 2, Qt::AlignHCenter);
+  layout->addWidget(zero, 5, 0, 1, 2, Qt::AlignHCenter);
+  
   // connect with signal slot connection using signal mapper
-  QSignalMapper *num = new QSignalMapper(this); // create mapper
-  connect(zero, SIGNAL(pressed()), num, SLOT(map()));
-  num->setMapping(zero, val); // pass val to slot as an int
-  connect(num, SIGNAL(mapped(int)), this, SLOT(calcScreen::numPress(int)));
+  QSignalMapper *num = new QSignalMapper(); // create mapper
+  QObject::connect(zero, SIGNAL(pressed()), num, SLOT(map()));
+  num->setMapping(zero, 0); // pass val to slot as an int
+  QObject::connect(num, SIGNAL(mapped(int)), calcScreen, SLOT(numPress(int)));
 }
 
 /**
