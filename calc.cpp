@@ -33,6 +33,49 @@ class numButton: public QPushButton {
   numButton(int v) { val = v; text = v;}
 
 };
+
+/**
+ * Class defining the calculator's screen. Contains slots to handle button presses.
+ */
+class calcScreen: public QTextEdit {
+
+  /**
+   * holds the current value of calculator input, displayed on screen
+   */
+  double val;
+  
+  /**
+   * holds last answer value for calculations
+   */
+  double ans;
+ 
+  public:
+  /**
+   * class constructor, initialises value to 0
+   */
+  calcScreen() { val = 0.0; setReadOnly(1); }
+  
+  private slots:
+  /**
+   * slot to handle presses of calculator number buttons
+   *
+   * @param v value of number button pressed
+   */
+  void numPress(int v);
+
+}
+
+/**
+  * slot to handle presses of calculator number buttons
+  *
+  * @param v value of number button pressed
+  */
+void calcScreen::numPress(int v) {
+
+  val = val*10.0; // multiply currently displayed value
+  val += v; // add on new input;
+
+}
  
 
 /**
@@ -44,22 +87,11 @@ class numButton: public QPushButton {
  */
 void createScreen(QGridLayout layout) {
 	
-  QTextEdit *screen = new QTextEdit("0"); // initialising text edit
-  screen.setReadOnly(1); // setting read only
+  // initialising screen
+  calcScreen screen;
   // now adding widget to layout, spans 3 columns
   layout.addWidget(screen, 0, 0, 1, 3, Qt::AlignHCenter);
 	
-}
-
-/**
- * Slot to handle a number button being pressed.
- *
- * @param val value of pressed number button
- */
-void numPress(int Val) {
-
-	
-
 }
 
 /**
@@ -79,13 +111,22 @@ void createNumberButtons(QGridLayout layout) {
       layout-> addWidget(but, i+1, j, Qt::AlignHCenter);
       
       // connection made to handle button presses using signal mapper
-      QSignalMapper *numPress = new QSignalMapper(this); // create mapper
+      QSignalMapper *num = new QSignalMapper(this); // create mapper
       connect(but, SIGNAL(pressed()), num, SLOT(map()));
       num->setMapping(but, val); // pass val to slot as an int
-      connect(num, SIGNAL(mapped(int)), this, SLOT(numPress(int)));
+      connect(num, SIGNAL(mapped(int)), this, SLOT(calcScreen::numPress(int)));
     }
   }
-
+  
+  // create the 0 button
+  numButton zero(0);
+  // add it to the layout, spans 2 columns
+  layout -> addWidget(zero, 5, 0, 1, 2, Qt::AlignHCenter);
+  // connect with signal slot connection using signal mapper
+  QSignalMapper *num = new QSignalMapper(this); // create mapper
+  connect(zero, SIGNAL(pressed()), num, SLOT(map()));
+  num->setMapping(zero, val); // pass val to slot as an int
+  connect(num, SIGNAL(mapped(int)), this, SLOT(calcScreen::numPress(int)));
 }
 
 /**
